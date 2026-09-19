@@ -1,0 +1,50 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity tiempo_extra is
+    Port (
+        clk_1s       : in  STD_LOGIC; -- Pulso de 1 segundo
+        switch       : in  STD_LOGIC; -- El interruptor principal
+        limite_35s   : in  STD_LOGIC; -- Bandera que indica que los 35s terminaron
+        extra_seg    : out STD_LOGIC_VECTOR(6 downto 0); -- Conteo de los segundos extra
+        alarma       : out STD_LOGIC  -- Señal para el LED de alerta/alarma
+    );
+end entity tiempo_extra;
+
+architecture arqui_tiempo_extra of tiempo_extra is
+    signal extra_reg       : integer range 0 to 99 := 0;
+    signal switch_anterior : STD_LOGIC := '0';
+begin
+
+    process(clk_1s)
+    begin
+        if rising_edge(clk_1s) then
+            switch_anterior <= switch;
+
+            -- Si el switch se reinicia (flanco de subida de 0 a 1), limpiamos el extra
+            if (switch = '1' and switch_anterior = '0') then
+                extra_reg <= 0;
+                
+            -- Si el switch está arriba ('1') Y ya se cumplieron los 35 segundos previos:
+            elsif (switch = '1' and limite_35s = '1') then
+                if extra_reg < 99 then
+                    extra_reg <= extra_reg + 1; -- Sigue contando el tiempo extra
+                end if;
+                
+            -- Si el switch baja ('0') o aún no llegamos a los 35s, mantenemos/reiniciamos
+            elsif switch = '0' then
+                extra_reg <= extra_reg; -- Se congela si bajan la palanca
+            else
+                extra_reg <= 0;         -- Si estamos antes de los 35s, el extra se queda en 0
+            end if;
+        end if;
+    end process;
+
+    -- Salidas
+    extra_seg <= std_logic_vector(to_unsigned(extra_reg, 7));
+    
+    -- La alarma se enciende únicamente si el switch está activo y ya pasamos de los 35 segundos
+    alarma    <= '1' when (switch = '1' and limite_35s = '1') else '0';
+
+end architecture arqui_tiempo_extra;
