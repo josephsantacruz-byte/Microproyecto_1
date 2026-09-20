@@ -1,7 +1,5 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Importamos el nuevo paquete actualizado
 library work;
 use work.paquete_cronometro.all;
 
@@ -24,14 +22,18 @@ architecture arqui_top_cronometro_3botones of top_cronometro_3botones is
     signal w_min     : STD_LOGIC_VECTOR (3 downto 0);
     signal w_dsec    : STD_LOGIC_VECTOR (3 downto 0);
     signal w_usec    : STD_LOGIC_VECTOR (3 downto 0);
+    
+    -- Señal auxiliar para juntar las decenas y unidades de segundos (de 0 a 59) para el hex_decoder
+    signal w_seg_totales : STD_LOGIC_VECTOR (6 downto 0);
 
 begin
 
-    -- 1. Instanciar el Divisor de Frecuencia
-    U1: divisor_frecuencia 
+    -- 1. Instanciar el Divisor de Reloj (nombre real: divisor_reloj)
+    U1: divisor_reloj 
         port map (
-            clk_in  => clk_50mhz,
-            clk_out => w_clk_1hz
+            clk_50  => clk_50mhz,
+            reset   => btn_reset,
+            clk_1s  => w_clk_1hz
         );
 
     -- 2. Instanciar el Control del Temporizador
@@ -46,23 +48,24 @@ begin
             seg_uni  => w_usec
         );
 
-    -- 3. Instanciar los Decodificadores de 7 Segmentos para cada Display HEX
-    U3: bin_to_7seg 
+    -- Lógica combinacional auxiliar para juntar s_dsec y s_usec en un valor binario de 0 a 59
+    -- (Decenas * 10 + Unidades) representado en 7 bits para el hex_decoder
+    w_seg_totales <= std_logic_vector(unsigned(w_dsec) * 10 + unsigned(w_usec));
+
+    -- 3. Instanciar el Decodificador Doble para los Segundos (HEX1 y HEX0)
+    U3_hex_decoder: hex_decoder 
+        port map (
+            bin_in  => w_seg_totales,
+            seg_dec => HEX1,
+            seg_uni => HEX0
+        );
+
+    -- 4. Para los Minutos (HEX2), necesitamos un decodificador de 1 solo dígito (bin_to_7seg)
+    -- Asegúrate de tener este componente disponible o agrégalo al paquete si usas uno simple.
+    U4_min_decoder: bin_to_7seg 
         port map (
             bin => w_min,
             seg => HEX2
-        );
-
-    U4: bin_to_7seg 
-        port map (
-            bin => w_dsec,
-            seg => HEX1
-        );
-
-    U5: bin_to_7seg 
-        port map (
-            bin => w_usec,
-            seg => HEX0
         );
 
 end arqui_top_cronometro_3botones;
