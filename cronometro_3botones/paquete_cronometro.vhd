@@ -3,17 +3,19 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 package paquete_cronometro is
 
-    -- Definimos nuestro tipo de dato personalizado para los estados de la FSM
+    -- Definimos nuestro tipo de dato personalizado para la FSM
     type estado_t is (REPOSO, CONTANDO, PAUSA);
 
-    -- Declaramos todos los componentes del sistema
-    component divisor_frecuencia is
+    -- 1. Divisor con sus nombres y puertos reales
+    component divisor_reloj is
         Port (
-            clk_in  : in  STD_LOGIC;
-            clk_out : out STD_LOGIC
+            clk_50 : in  STD_LOGIC;
+            reset  : in  STD_LOGIC;
+            clk_1s : out STD_LOGIC
         );
     end component;
 
+    -- 2. Control del temporizador
     component timer_control is
         Port (
             clk_1hz  : in  STD_LOGIC;
@@ -26,10 +28,12 @@ package paquete_cronometro is
         );
     end component;
 
-    component bin_to_7seg is
+    -- 3. Decodificador doble para los segundos (con sus puertos reales)
+    component hex_decoder is
         Port (
-            bin : in  STD_LOGIC_VECTOR (3 downto 0);
-            seg : out STD_LOGIC_VECTOR (6 downto 0)
+            bin_in  : in  STD_LOGIC_VECTOR (6 downto 0);
+            seg_dec : out STD_LOGIC_VECTOR (6 downto 0);
+            seg_uni : out STD_LOGIC_VECTOR (6 downto 0)
         );
     end component;
 
