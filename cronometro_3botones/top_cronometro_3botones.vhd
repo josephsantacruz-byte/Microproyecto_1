@@ -1,6 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+
 library work;
 use work.paquete_cronometro.all;
 
@@ -47,8 +48,8 @@ begin
             seg_uni  => w_usec
         );
 
-    -- Lógica combinacional auxiliar para juntar s_dsec y s_usec en un valor de 0 a 59
-    w_seg_totales <= std_logic_vector(unsigned(w_dsec) * 10 + unsigned(w_usec));
+    -- Lógica combinacional auxiliar con resize para ajustar a exactamente 7 bits
+    w_seg_totales <= std_logic_vector(resize(unsigned(w_dsec) * 10 + unsigned(w_usec), 7));
 
     -- 3. Instanciar el Decodificador Doble para los Segundos (HEX1 y HEX0)
     U3_hex_decoder: hex_decoder 
