@@ -7,6 +7,7 @@ package sistema_paquete is
     component divisor_reloj is
         Port (
             clk_50 : in  STD_LOGIC;
+				reset  : in  STD_LOGIC;
             clk_1s : out STD_LOGIC
         );
     end component;
