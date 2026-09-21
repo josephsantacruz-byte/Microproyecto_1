@@ -25,7 +25,7 @@ architecture arqui_timer_control of timer_control is
     signal s_usec : integer range 0 to 9 := 0;
 begin
 
-    process(clk_1hz, reinicio)
+    process(clk_1hz, reinicio, start, stop)
     begin
         if reinicio = '1' then
             estado_actual <= REPOSO;

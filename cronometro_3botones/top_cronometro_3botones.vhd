@@ -11,7 +11,6 @@ entity top_cronometro_3botones is
         btn_start : in  STD_LOGIC;
         btn_stop  : in  STD_LOGIC;
         btn_reset : in  STD_LOGIC;
-		  reset     : in  STD_LOGIC;
         HEX2      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Minutos
         HEX1      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Segundos (Decenas)
         HEX0      : out STD_LOGIC_VECTOR (6 downto 0)  -- Display de Segundos (Unidades)
