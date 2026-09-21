@@ -33,5 +33,4 @@ begin
     end process;
 
     clk_1s <= r_clk;
-
 end architecture arqui_divisor_reloj;
