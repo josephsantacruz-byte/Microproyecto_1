@@ -11,6 +11,7 @@ entity top_cronometro_3botones is
         btn_start : in  STD_LOGIC;
         btn_stop  : in  STD_LOGIC;
         btn_reset : in  STD_LOGIC;
+		  reset     : in  STD_LOGIC;
         HEX2      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Minutos
         HEX1      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Segundos (Decenas)
         HEX0      : out STD_LOGIC_VECTOR (6 downto 0)  -- Display de Segundos (Unidades)
@@ -32,7 +33,7 @@ begin
     U1: divisor_reloj 
         port map (
             clk_50  => clk_50mhz,
-            reset   => btn_reset,
+            reset   => '1',
             clk_1s  => w_clk_1hz
         );
 
@@ -42,7 +43,7 @@ begin
             clk_1hz  => w_clk_1hz,
             start    => btn_start,
             stop     => btn_stop,
-            reset    => btn_reset,
+            reinicio => btn_reset,
             minutos  => w_min,
             seg_dec  => w_dsec,
             seg_uni  => w_usec
