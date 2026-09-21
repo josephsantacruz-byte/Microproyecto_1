@@ -8,7 +8,7 @@ entity timer_control is
         clk_1hz  : in  STD_LOGIC; -- Señal de 1 Hz proveniente del divisor
         start    : in  STD_LOGIC;
         stop     : in  STD_LOGIC;
-        reset    : in  STD_LOGIC;
+        reinicio : in  STD_LOGIC;
         minutos  : out STD_LOGIC_VECTOR (3 downto 0);
         seg_dec  : out STD_LOGIC_VECTOR (3 downto 0);
         seg_uni  : out STD_LOGIC_VECTOR (3 downto 0)
@@ -25,9 +25,9 @@ architecture arqui_timer_control of timer_control is
     signal s_usec : integer range 0 to 9 := 0;
 begin
 
-    process(clk_1hz, reset)
+    process(clk_1hz, reinicio)
     begin
-        if reset = '1' then
+        if reinicio = '1' then
             estado_actual <= REPOSO;
             s_min  <= 0;
             s_dsec <= 0;
