@@ -1,14 +1,15 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
 use work.sistema_paquete.all;
 
 entity top_control is
     Port (
         clk_50     : in  STD_LOGIC;                      
-        switch     : in  STD_LOGIC;                      
-        alarma_led : out STD_LOGIC;                      
+        switch     : in  STD_LOGIC;
+		  reset      : in  STD_LOGIC;
+        alarma_led : out STD_LOGIC;  
+		  felicitacion_led  : out STD_LOGIC;
         -- Primer par de displays (Contador 0-35s)
         seg_35_dec : out STD_LOGIC_VECTOR(6 downto 0);     
         seg_35_uni : out STD_LOGIC_VECTOR(6 downto 0);
@@ -27,11 +28,14 @@ architecture Behavioral of top_control is
     signal w_limite_35s: STD_LOGIC;
 
 begin
+    felicitacion_led <= '1' when (switch = '0' and unsigned(w_segundos) > 0 and unsigned(w_segundos) < 35) else '0';
 
     -- 1. Instancia del Divisor de Reloj
     U1_DIV: divisor_reloj
+
         port map (
             clk_50 => clk_50,
+				reset  => reset,
             clk_1s => w_clk_1s
         );
 
