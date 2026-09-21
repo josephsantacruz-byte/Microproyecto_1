@@ -21,7 +21,7 @@ package paquete_cronometro is
             clk_1hz  : in  STD_LOGIC;
             start    : in  STD_LOGIC;
             stop     : in  STD_LOGIC;
-            reset    : in  STD_LOGIC;
+            reinicio : in  STD_LOGIC;
             minutos  : out STD_LOGIC_VECTOR (3 downto 0);
             seg_dec  : out STD_LOGIC_VECTOR (3 downto 0);
             seg_uni  : out STD_LOGIC_VECTOR (3 downto 0)
