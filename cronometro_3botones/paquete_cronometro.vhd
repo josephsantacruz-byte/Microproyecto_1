@@ -3,9 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 package paquete_cronometro is
 
-    -- Definimos nuestro tipo de dato personalizado para la FSM
-    type estado_t is (REPOSO, CONTANDO, PAUSA);
-
     -- 1. Divisor con sus nombres y puertos reales
     component divisor_reloj is
         Port (

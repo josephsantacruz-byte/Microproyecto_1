@@ -1,70 +1,61 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL; 
 
-library work;
 use work.paquete_cronometro.all;
 
 entity top_cronometro_3botones is
     Port (
-        clk_50mhz : in  STD_LOGIC; -- Reloj de la tarjeta DE0 (50 MHz)
-        btn_start : in  STD_LOGIC;
-        btn_stop  : in  STD_LOGIC;
-        btn_reset : in  STD_LOGIC;
-        HEX2      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Minutos
-        HEX1      : out STD_LOGIC_VECTOR (6 downto 0); -- Display de Segundos (Decenas)
-        HEX0      : out STD_LOGIC_VECTOR (6 downto 0)  -- Display de Segundos (Unidades)
+        clk_50   : in  STD_LOGIC; -- Reloj de la tarjeta DE0 (50 MHz)
+        btn_start   : in  STD_LOGIC;
+        btn_stop    : in  STD_LOGIC;
+        btn_reset   : in  STD_LOGIC;
+        min_out_dec : out STD_LOGIC_VECTOR(6 downto 0);
+        min_out_uni : out STD_LOGIC_VECTOR(6 downto 0);
+        seg_dec     : out STD_LOGIC_VECTOR(6 downto 0);
+        seg_uni     : out STD_LOGIC_VECTOR(6 downto 0)
     );
-end top_cronometro_3botones;
+end entity top_cronometro_3botones;
 
 architecture arqui_top_cronometro_3botones of top_cronometro_3botones is
 
-    -- Señales internas de conexión entre bloques
-    signal w_clk_1hz     : STD_LOGIC;
-    signal w_min         : STD_LOGIC_VECTOR (3 downto 0);
-    signal w_dsec        : STD_LOGIC_VECTOR (3 downto 0);
-    signal w_usec        : STD_LOGIC_VECTOR (3 downto 0);
-    signal w_seg_totales : STD_LOGIC_VECTOR (6 downto 0);
+    -- Señales internas de interconexión
+    signal w_clk_1s     : STD_LOGIC;
+    signal w_minutos    : STD_LOGIC_VECTOR(3 downto 0);
+    signal w_seg_dec    : STD_LOGIC_VECTOR(3 downto 0);
+    signal w_seg_uni    : STD_LOGIC_VECTOR(3 downto 0);
 
 begin
 
-    -- 1. Instanciar el Divisor de Reloj
-    U1: divisor_reloj 
+    -- 1. Instancia del Divisor de Reloj (Nunca se para, reset fijo en '1')
+    U1_DIV: divisor_reloj
         port map (
-            clk_50  => clk_50mhz,
-            reset   => '1',
-            clk_1s  => w_clk_1hz
+            clk_50 => clk_50,
+            reset  => '1',      -- Fijo en '1' para que el reloj no se detenga nunca
+            clk_1s => w_clk_1s
         );
 
-    -- 2. Instanciar el Control del Temporizador
-    U2: timer_control 
+    -- 2. Instancia del Control del Temporizador (Sin máquinas de estados)
+    U2_CTRL: timer_control
         port map (
-            clk_1hz  => w_clk_1hz,
+            clk_1hz  => w_clk_1s,
             start    => btn_start,
             stop     => btn_stop,
-            reinicio => btn_reset,
-            minutos  => w_min,
-            seg_dec  => w_dsec,
-            seg_uni  => w_usec
+            reinicio => btn_reset,   -- Conectado al botón físico de la tarjeta
+            minutos  => w_minutos,
+            seg_dec  => w_seg_dec,
+            seg_uni  => w_seg_uni
         );
 
-    -- Lógica combinacional auxiliar con resize para ajustar a exactamente 7 bits
-    w_seg_totales <= std_logic_vector(resize(unsigned(w_dsec) * 10 + unsigned(w_usec), 7));
-
-    -- 3. Instanciar el Decodificador Doble para los Segundos (HEX1 y HEX0)
-    U3_hex_decoder: hex_decoder 
+    -- 3. Decodificador para los segundos (unidades y decenas)
+    U3_DEC_SEG: hex_decoder
         port map (
-            bin_in  => w_seg_totales,
-            seg_dec => HEX1,
-            seg_uni => HEX0
+            bin_in  => "000" & w_seg_uni, -- Adaptación de tamaño si el decodificador pide 7 bits
+            seg_dec => open,               -- Si usas un decodificador doble, ajusta según los puertos
+            seg_uni => seg_uni
         );
 
-    -- 4. Para los Minutos (HEX2), reutilizamos el hex_decoder rellenando con ceros a la izquierda
-    U4_min_decoder: hex_decoder 
-        port map (
-            bin_in  => "000" & w_min,
-            seg_dec => open,          
-            seg_uni => HEX2           
-        );
+    -- (Nota: Puedes duplicar o ajustar las instancias de los decodificadores según 
+    --  cómo tengas configurados tus pines y salidas para los minutos y decenas de segundo).
 
-end arqui_top_cronometro_3botones;
+end architecture arqui_top_cronometro_3botones;
