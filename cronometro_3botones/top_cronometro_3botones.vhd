@@ -6,7 +6,7 @@ use work.paquete_cronometro.all;
 
 entity top_cronometro_3botones is
     Port (
-        clk_50   : in  STD_LOGIC; -- Reloj de la tarjeta DE0 (50 MHz)
+        clk_50      : in  STD_LOGIC; -- Reloj de la tarjeta DE0 (50 MHz)
         btn_start   : in  STD_LOGIC;
         btn_stop    : in  STD_LOGIC;
         btn_reset   : in  STD_LOGIC;
@@ -35,7 +35,7 @@ begin
             clk_1s => w_clk_1s
         );
 
-    -- 2. Instancia del Control del Temporizador (Sin máquinas de estados)
+    -- 2. Instancia del Control del Temporizador
     U2_CTRL: timer_control
         port map (
             clk_1hz  => w_clk_1s,
@@ -47,15 +47,28 @@ begin
             seg_uni  => w_seg_uni
         );
 
-    -- 3. Decodificador para los segundos (unidades y decenas)
-    U3_DEC_SEG: hex_decoder
+    -- 3. Decodificador para las unidades de segundo
+    U3_DEC_SEG_UNI: hex_decoder
         port map (
-            bin_in  => "000" & w_seg_uni, -- Adaptación de tamaño si el decodificador pide 7 bits
-            seg_dec => open,               -- Si usas un decodificador doble, ajusta según los puertos
+            bin_in  => "000" & w_seg_uni,
+            seg_dec => open,
             seg_uni => seg_uni
         );
 
-    -- (Nota: Puedes duplicar o ajustar las instancias de los decodificadores según 
-    --  cómo tengas configurados tus pines y salidas para los minutos y decenas de segundo).
+    -- 4. Decodificador para las decenas de segundo
+    U4_DEC_SEG_DEC: hex_decoder
+        port map (
+            bin_in  => "000" & w_seg_dec,
+            seg_dec => open,
+            seg_uni => seg_dec
+        );
+
+    -- 5. Decodificador para los minutos (unidades y decenas mapeadas a las salidas del top)
+    U5_DEC_MINUTOS: hex_decoder
+        port map (
+            bin_in  => "000" & w_minutos,
+            seg_dec => min_out_dec,
+            seg_uni => min_out_uni
+        );
 
 end architecture arqui_top_cronometro_3botones;
