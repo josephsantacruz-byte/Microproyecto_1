@@ -3,7 +3,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 package cronometro_pkg is
 
-    -- Divisor de reloj
     component divisor_reloj is
         Port (
             clk_50 : in  STD_LOGIC;
@@ -12,9 +11,9 @@ package cronometro_pkg is
         );
     end component;
 
-    -- Cronómetro de 1 Botón (con clk_1s actualizado)
     component timer_1boton is
         Port (
+            clk_50   : in  STD_LOGIC;
             clk_1s   : in  STD_LOGIC;
             btn      : in  STD_LOGIC;
             minutos  : out STD_LOGIC_VECTOR (3 downto 0);
@@ -23,12 +22,10 @@ package cronometro_pkg is
         );
     end component;
 
-    -- Decodificador de 7 segmentos
     component hex_decoder is
         Port (
-            bin_in   : in  STD_LOGIC_VECTOR (6 downto 0);
-            seg_dec  : out STD_LOGIC_VECTOR (6 downto 0);
-            seg_uni  : out STD_LOGIC_VECTOR (6 downto 0)
+            bin_in  : in  STD_LOGIC_VECTOR (3 downto 0);
+            seg_out : out STD_LOGIC_VECTOR (6 downto 0)
         );
     end component;
 
