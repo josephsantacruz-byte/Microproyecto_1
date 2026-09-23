@@ -1,66 +1,61 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-library work;
+-- Usamos el paquete de componentes
 use work.cronometro_pkg.all;
 
 entity top_cronometro_1boton is
     Port (
-        clk_50mhz   : in  STD_LOGIC;
-        btn_control : in  STD_LOGIC;
-        HEX2_min    : out STD_LOGIC_VECTOR (6 downto 0);
-        HEX1_dsec   : out STD_LOGIC_VECTOR (6 downto 0);
-        HEX0_usec   : out STD_LOGIC_VECTOR (6 downto 0)
+        clk_50MHz   : in  STD_LOGIC;                    -- Reloj principal de la tarjeta
+        reset_sys   : in  STD_LOGIC;                    -- Reset maestro del divisor
+        btn_action  : in  STD_LOGIC;                    -- Botón de control (Start/Stop/Reset)
+        seg_min     : out STD_LOGIC_VECTOR(6 downto 0); -- Display para Minutos
+        seg_sec_dec : out STD_LOGIC_VECTOR(6 downto 0); -- Display Decenas de Segundos
+        seg_sec_uni : out STD_LOGIC_VECTOR(6 downto 0)  -- Display Unidades de Segundos
     );
-end top_cronometro_1boton;
+end entity top_cronometro_1boton;
 
 architecture arqui_top_cronometro_1boton of top_cronometro_1boton is
 
-    signal w_clk_1s  : STD_LOGIC;
-    signal w_minutos : STD_LOGIC_VECTOR (3 downto 0);
-    signal w_seg_dec : STD_LOGIC_VECTOR (3 downto 0);
-    signal w_seg_uni : STD_LOGIC_VECTOR (3 downto 0);
+    -- Señales de interconexión interna
+    signal wire_clk_1s    : STD_LOGIC;
+    signal wire_minutos   : STD_LOGIC_VECTOR(6 downto 0);
+    signal wire_segundos  : STD_LOGIC_VECTOR(6 downto 0);
+    signal wire_dummy_dec : STD_LOGIC_VECTOR(6 downto 0);
 
 begin
 
-    -- 1. Divisor de Reloj
-    U1_divisor: divisor_reloj
+    -- 1. Instancia del Divisor de Reloj
+    U1_DIVISOR: divisor_reloj
         port map (
-            clk_50 => clk_50mhz,
-            reset  => '1',      
-            clk_1s => w_clk_1s
+            clk_50 => clk_50MHz,
+            reset  => reset_sys,
+            clk_1s => wire_clk_1s
         );
 
-    -- 2. Cronómetro de 1 Botón
-    U2_timer: timer_1boton
+    -- 2. Instancia del Temporizador
+    U2_TIMER: timer_1boton
         port map (
-            clk_50  => clk_50mhz,
-            clk_1s  => w_clk_1s,
-            btn     => not btn_control, 
-            minutos => w_minutos,
-            seg_dec => w_seg_dec,
-            seg_uni => w_seg_uni
+            clk_1s       => wire_clk_1s,
+            btn          => btn_action,
+            bin_minutos  => wire_minutos,
+            bin_segundos => wire_segundos
         );
 
-    -- 3. Decodificador para Minutos (HEX2)
-    U3_dec_min: hex_decoder
+    -- 3. Decodificador para los Segundos (Decenas y Unidades)
+    U3_DEC_SEGUNDOS: hex_decoder
         port map (
-            bin_in  => w_minutos,    
-            seg_out => HEX2_min
+            bin_in  => wire_segundos,
+            seg_dec => seg_sec_dec,
+            seg_uni => seg_sec_uni
         );
 
-    -- 4. Decodificador para Decenas de Segundo (HEX1)
-    U4_dec_dsec: hex_decoder
+    -- 4. Decodificador para los Minutos (Solo Unidades)
+    U4_DEC_MINUTOS: hex_decoder
         port map (
-            bin_in  => w_seg_dec,    
-            seg_out => HEX1_dsec
-        );
-
-    -- 5. Decodificador para Unidades de Segundo (HEX0)
-    U5_dec_usec: hex_decoder
-        port map (
-            bin_in  => w_seg_uni,    
-            seg_out => HEX0_usec
+            bin_in  => wire_minutos,
+            seg_dec => wire_dummy_dec, -- No utilizado
+            seg_uni => seg_min
         );
 
 end architecture arqui_top_cronometro_1boton;

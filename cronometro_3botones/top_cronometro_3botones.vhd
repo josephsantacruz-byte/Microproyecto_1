@@ -10,8 +10,7 @@ entity top_cronometro_3botones is
         btn_start   : in  STD_LOGIC;
         btn_stop    : in  STD_LOGIC;
         btn_reset   : in  STD_LOGIC;
-        min_out_dec : out STD_LOGIC_VECTOR(6 downto 0);
-        min_out_uni : out STD_LOGIC_VECTOR(6 downto 0);
+        min_out_uni : out STD_LOGIC_VECTOR(6 downto 0); -- Solo Unidades de Minutos
         seg_dec     : out STD_LOGIC_VECTOR(6 downto 0);
         seg_uni     : out STD_LOGIC_VECTOR(6 downto 0)
     );
@@ -27,7 +26,7 @@ architecture arqui_top_cronometro_3botones of top_cronometro_3botones is
 
 begin
 
-    -- 1. Instancia del Divisor de Reloj (Nunca se para, reset fijo en '1')
+    -- 1. Instancia del Divisor de Reloj
     U1_DIV: divisor_reloj
         port map (
             clk_50 => clk_50,
@@ -41,7 +40,7 @@ begin
             clk_1hz  => w_clk_1s,
             start    => btn_start,
             stop     => btn_stop,
-            reinicio => btn_reset,   -- Conectado al botón físico de la tarjeta
+            reinicio => btn_reset,
             minutos  => w_minutos,
             seg_dec  => w_seg_dec,
             seg_uni  => w_seg_uni
@@ -63,11 +62,11 @@ begin
             seg_uni => seg_dec
         );
 
-    -- 5. Decodificador para los minutos (unidades y decenas mapeadas a las salidas del top)
+    -- 5. Decodificador para los minutos (solo unidades conectadas al display)
     U5_DEC_MINUTOS: hex_decoder
         port map (
             bin_in  => "000" & w_minutos,
-            seg_dec => min_out_dec,
+            seg_dec => open,        -- Se deja abierto porque no se utiliza
             seg_uni => min_out_uni
         );
 

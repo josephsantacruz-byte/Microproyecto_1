@@ -24,25 +24,26 @@ architecture arqui_timer_control of timer_control is
 	 
 begin 
 
+    -- 1. Control asíncrono de estado 
+    process(start, stop, reinicio)
+    begin
+        if reinicio = '0' or stop = '0' then
+            corriendo <= '0';
+        elsif start = '0' then
+            corriendo <= '1';
+        end if;
+    end process;
+
+    -- 2. Conteo de tiempo sincronizado a 1 Hz
     process(clk_1hz, reinicio)
     begin
         -- El reinicio es activo en bajo (si se presiona el botón, vale '0')
         if reinicio = '0' then
-            corriendo <= '0';
-            s_min     <= 0;
-            s_dsec    <= 0;
-            s_usec    <= 0;
+            s_min  <= 0;
+            s_dsec <= 0;
+            s_usec <= 0;
         elsif rising_edge(clk_1hz) then
             
-            -- Control independiente para Start y Stop
-            if start = '0' then
-                corriendo <= '1';
-            end if;
-
-            if stop = '0' then
-                corriendo <= '0';
-            end if;
-
             -- Lógica de conteo cuando el cronómetro está habilitado
             if corriendo = '1' then
                 if s_usec = 9 then
