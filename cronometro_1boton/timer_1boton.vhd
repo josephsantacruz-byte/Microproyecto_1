@@ -5,7 +5,7 @@ use IEEE.NUMERIC_STD.ALL;
 entity timer_1boton is
     Port (
         clk_1s       : in  STD_LOGIC;                    -- Reloj de 1 Hz
-        btn          : in  STD_LOGIC;                    -- Botón (Start / Stop / Reset)
+        btn          : in  STD_LOGIC;                    -- Botón (Start / Stop / Reset, activo en '0')
         bin_minutos  : out STD_LOGIC_VECTOR(6 downto 0); -- Valor entero de minutos
         bin_segundos : out STD_LOGIC_VECTOR(6 downto 0)  -- Valor entero de segundos
     );
@@ -25,9 +25,8 @@ architecture arqui_timer_1boton of timer_1boton is
 begin
 
     ------------------------------------------------------------------
-    -- 1. CONTROL ASÍNCRONO DE START / STOP (INMEDIATO)
-    --    Cambia el estado con un clic rápido sin esperar al reloj.
-    --    Se asume que 'btn = 0' es el estado presionado (activo en bajo).
+    -- 1. CONTROL ASÍNCRONO DE START / STOP (RESPUESTA INMEDIATA)
+    --    Alterna el estado al presionar el botón (falling_edge).
     ------------------------------------------------------------------
     process(btn, reset_manual)
     begin
@@ -43,13 +42,13 @@ begin
 
 
     ------------------------------------------------------------------
-    -- 2. CONTROL SÍNCRONO (CONTEO DE 2 SEGUNDOS Y CRONÓMETRO A 1 HZ)
+    -- 2. CONTROL SÍNCRONO DE TIEMPO Y RESET (A 1 HZ)
     ------------------------------------------------------------------
     process(clk_1s)
     begin
         if rising_edge(clk_1s) then
             
-            -- Medición de tiempo presionado (Asumiendo activo en bajo: btn = '0')
+            -- Medición de tiempo presionado (btn = '0')
             if btn = '0' then
                 if cnt_segundos_btn < 2 then
                     cnt_segundos_btn <= cnt_segundos_btn + 1;
@@ -59,14 +58,20 @@ begin
                 reset_manual     <= false;
             end if;
 
-            -- Si se mantiene presionado 2 segundos -> REINICIO
+            --------------------------------------------------------------
+            -- REINICIO (2 segundos presionados)
+            --------------------------------------------------------------
             if cnt_segundos_btn >= 2 then
                 seg_cnt      <= 0;
                 min_cnt      <= 0;
-                reset_manual <= true; -- Limpia el estado toggle_btn
-            
-            -- Conteo regular de minutos y segundos si está corriendo
-            elsif estado_corriendo then
+                reset_manual <= true; -- Apaga toggle_btn de forma asíncrona
+
+            --------------------------------------------------------------
+            -- CONTEO REGULAR
+            -- CONDICIÓN CLAVE: Solo avanza si 'btn = 1' (botón suelto).
+            -- Si mantienes 'btn = 0', la cuenta se CONGELA en el valor actual.
+            --------------------------------------------------------------
+            elsif estado_corriendo and btn = '1' then
                 if seg_cnt = 59 then
                     seg_cnt <= 0;
                     if min_cnt = 9 then
